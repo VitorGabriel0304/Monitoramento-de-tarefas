@@ -1,5 +1,7 @@
 // ─── Configuração da API ─────────────────────────────────────────
-const API = '/api/tasks';
+const API = window.location.hostname.includes('localhost')
+  ? 'http://localhost:5000/api'
+  : 'https://minhastafefas.up.railway.app/api';
 
 // ─── Auth guard ──────────────────────────────────────────────────
 const user = JSON.parse(localStorage.getItem('user'));
@@ -37,11 +39,11 @@ function setGreeting() {
 // ─── Carregar tarefas ────────────────────────────────────────────
 async function loadTasks() {
   try {
-    const res = await fetch(`${API}/${user.id}`);
+    const res = await fetch(`${API}/tasks/${user.id}`);
     tasks = await res.json();
     renderAll();
-  } catch (err) {
-    console.error('Erro ao carregar tarefas', err);
+  } catch {
+    console.error('Erro ao carregar tarefas');
   }
 }
 
@@ -68,6 +70,7 @@ function updateCounts() {
   document.getElementById('count-done').textContent = done;
 }
 
+// ─── Renderização das tarefas ───────────────────────────────────
 function renderTasks() {
   const query = searchInput.value.toLowerCase();
   let filtered = activeFilter === 'all' ? tasks : tasks.filter(t => t.status === activeFilter);
@@ -124,32 +127,24 @@ function buildCard(task) {
   return card;
 }
 
-// ─── Quick status ─────────────────────────────────────────────
+// ─── Atualizar status rápido ─────────────────────────────────────
 async function quickStatus(id, status) {
-  try {
-    await fetch(`${API}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
-    });
-    loadTasks();
-  } catch(err) {
-    console.error('Erro ao atualizar status', err);
-  }
+  await fetch(`${API}/tasks/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  });
+  loadTasks();
 }
 
-// ─── Delete ───────────────────────────────────────────────────
+// ─── Deletar tarefa ─────────────────────────────────────────────
 async function deleteTask(id) {
   if (!confirm('Deseja remover esta tarefa?')) return;
-  try {
-    await fetch(`${API}/${id}`, { method: 'DELETE' });
-    loadTasks();
-  } catch(err) {
-    console.error('Erro ao deletar', err);
-  }
+  await fetch(`${API}/tasks/${id}`, { method: 'DELETE' });
+  loadTasks();
 }
 
-// ─── Modal ────────────────────────────────────────────────────
+// ─── Modal ──────────────────────────────────────────────────────
 document.getElementById('btn-new-task').addEventListener('click', () => openModal());
 document.getElementById('modal-close').addEventListener('click', closeModal);
 document.getElementById('btn-cancel-task').addEventListener('click', closeModal);
@@ -173,17 +168,13 @@ function closeModal() {
   editingId = null;
 }
 
-// ─── Save task ────────────────────────────────────────────────
+// ─── Salvar tarefa ──────────────────────────────────────────────
 document.getElementById('btn-save-task').addEventListener('click', async () => {
   const title = document.getElementById('task-title').value.trim();
   const errEl = document.getElementById('task-error');
   errEl.classList.add('hidden');
 
-  if (!title) {
-    errEl.textContent = 'O título é obrigatório.';
-    errEl.classList.remove('hidden');
-    return;
-  }
+  if (!title) { errEl.textContent = 'O título é obrigatório.'; errEl.classList.remove('hidden'); return; }
 
   const payload = {
     title,
@@ -196,13 +187,13 @@ document.getElementById('btn-save-task').addEventListener('click', async () => {
 
   try {
     if (editingId) {
-      await fetch(`${API}/${editingId}`, {
+      await fetch(`${API}/tasks/${editingId}`, {
         method: 'PUT',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(payload)
       });
     } else {
-      await fetch(`${API}/`, {
+      await fetch(`${API}/tasks/`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify(payload)
@@ -210,10 +201,9 @@ document.getElementById('btn-save-task').addEventListener('click', async () => {
     }
     closeModal();
     loadTasks();
-  } catch(err) {
+  } catch {
     errEl.textContent = 'Erro ao salvar. Tente novamente.';
     errEl.classList.remove('hidden');
-    console.error(err);
   }
 });
 
@@ -269,7 +259,6 @@ document.getElementById('btn-logout').addEventListener('click', () => {
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
 function formatDate(str) {
   if (!str) return '';
   const [y,m,d] = str.split('-');
