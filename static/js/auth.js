@@ -1,71 +1,88 @@
-// ─── Configuração da API ─────────────────────────
+// ─── Configuração da API ─────────────────────────────────────────
 const API = window.location.hostname.includes('localhost')
   ? 'http://localhost:5000/api'
   : 'https://minhastafefas.up.railway.app/api';
 
-// ─── Formulários ─────────────────────────────────
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const loginError = document.getElementById('login-error');
-const registerError = document.getElementById('register-error');
+// ─── Elementos ──────────────────────────────────────────────────
+const btnLogin = document.getElementById('btn-login');
+const btnRegister = document.getElementById('btn-register');
 
-// ─── Login ───────────────────────────────────────
-if (loginForm) {
-  loginForm.addEventListener('submit', async e => {
-    e.preventDefault();
+const loginError = document.getElementById('login-error');
+const registerError = document.getElementById('reg-error');
+
+// ─── LOGIN ──────────────────────────────────────────────────────
+if (btnLogin) {
+  btnLogin.addEventListener('click', async () => {
+
     loginError.classList.add('hidden');
 
     const payload = {
-      email: loginForm.email.value.trim(),
-      password: loginForm.password.value.trim()
+      email: document.getElementById('login-email').value.trim(),
+      password: document.getElementById('login-password').value.trim()
     };
 
     try {
       const res = await fetch(`${API}/users/login`, {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error('Login inválido');
+      if (!res.ok) throw new Error();
+
       const data = await res.json();
       localStorage.setItem('user', JSON.stringify(data));
+
       window.location.href = '/dashboard';
-    } catch (err) {
-      console.log(err);
-      loginError.textContent = 'Não foi possível conectar ao servidor ou login inválido.';
+
+    } catch {
+      loginError.textContent = 'Erro ao fazer login.';
       loginError.classList.remove('hidden');
     }
   });
 }
 
-// ─── Registro ───────────────────────────────────
-if (registerForm) {
-  registerForm.addEventListener('submit', async e => {
-    e.preventDefault();
+// ─── REGISTRO ───────────────────────────────────────────────────
+if (btnRegister) {
+  btnRegister.addEventListener('click', async () => {
+
     registerError.classList.add('hidden');
 
     const payload = {
-      name: registerForm.name.value.trim(),
-      email: registerForm.email.value.trim(),
-      password: registerForm.password.value.trim()
+      name: document.getElementById('reg-name').value.trim(),
+      email: document.getElementById('reg-email').value.trim(),
+      password: document.getElementById('reg-password').value.trim()
     };
 
     try {
       const res = await fetch(`${API}/users/register`, {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error('Erro ao registrar');
+      if (!res.ok) throw new Error();
+
       const data = await res.json();
       localStorage.setItem('user', JSON.stringify(data));
+
       window.location.href = '/dashboard';
-    } catch (err) {
-      console.log(err);
-      registerError.textContent = 'Não foi possível conectar ao servidor ou email já cadastrado.';
+
+    } catch {
+      registerError.textContent = 'Erro ao criar conta.';
       registerError.classList.remove('hidden');
     }
   });
 }
+
+
+// ─── Troca de abas ─────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
