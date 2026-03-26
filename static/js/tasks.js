@@ -1,40 +1,40 @@
+// ─── Configuração da API ─────────────────────────────────────────
 const API = '/api';
 
-// ─── Auth guard ───────────────────────────────────────────────
+// ─── Auth guard ──────────────────────────────────────────────────
 const user = JSON.parse(localStorage.getItem('user'));
 if (!user) window.location.href = '/';
 
-// ─── State ────────────────────────────────────────────────────
-let tasks        = [];
+// ─── Estado do App ───────────────────────────────────────────────
+let tasks = [];
 let activeFilter = 'all';
-let editingId    = null;
+let editingId = null;
 
-// ─── DOM refs ─────────────────────────────────────────────────
-const tasksList    = document.getElementById('tasks-list');
-const emptyState   = document.getElementById('empty-state');
+// ─── Referências do DOM ─────────────────────────────────────────
+const tasksList = document.getElementById('tasks-list');
+const emptyState = document.getElementById('empty-state');
 const modalOverlay = document.getElementById('modal-overlay');
-const searchInput  = document.getElementById('search-input');
-const sidebarEl    = document.querySelector('.sidebar');
-const toggleBtn    = document.getElementById('sidebar-toggle');
-const backdropEl   = document.getElementById('sidebar-backdrop');
+const searchInput = document.getElementById('search-input');
+const sidebarEl = document.querySelector('.sidebar');
+const toggleBtn = document.getElementById('sidebar-toggle');
+const backdropEl = document.getElementById('sidebar-backdrop');
 
-// ─── Init ─────────────────────────────────────────────────────
-document.getElementById('user-name').textContent   = user.name;
+// ─── Inicialização ──────────────────────────────────────────────
+document.getElementById('user-name').textContent = user.name;
 document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
-
 setGreeting();
 loadTasks();
 
-// ─── Greeting & date ──────────────────────────────────────────
+// ─── Saudação e data ─────────────────────────────────────────────
 function setGreeting() {
   const h = new Date().getHours();
   const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
-  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}!`;
+  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}! 👋`;
   const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', opts);
 }
 
-// ─── Load tasks ───────────────────────────────────────────────
+// ─── Carregar tarefas ────────────────────────────────────────────
 async function loadTasks() {
   try {
     const res = await fetch(`${API}/tasks/${user.id}`);
@@ -45,35 +45,36 @@ async function loadTasks() {
   }
 }
 
-// ─── Render ───────────────────────────────────────────────────
+// ─── Renderização ───────────────────────────────────────────────
 function renderAll() {
   updateCounts();
   renderTasks();
 }
 
 function updateCounts() {
-  const total      = tasks.length;
-  const pending    = tasks.filter(t => t.status === 'pending').length;
+  const total = tasks.length;
+  const pending = tasks.filter(t => t.status === 'pending').length;
   const inProgress = tasks.filter(t => t.status === 'in_progress').length;
-  const done       = tasks.filter(t => t.status === 'done').length;
+  const done = tasks.filter(t => t.status === 'done').length;
 
-  document.getElementById('stat-all').textContent         = total;
-  document.getElementById('stat-pending').textContent     = pending;
+  document.getElementById('stat-all').textContent = total;
+  document.getElementById('stat-pending').textContent = pending;
   document.getElementById('stat-in_progress').textContent = inProgress;
-  document.getElementById('stat-done').textContent        = done;
+  document.getElementById('stat-done').textContent = done;
 
-  document.getElementById('count-all').textContent         = total;
-  document.getElementById('count-pending').textContent     = pending;
+  document.getElementById('count-all').textContent = total;
+  document.getElementById('count-pending').textContent = pending;
   document.getElementById('count-in_progress').textContent = inProgress;
-  document.getElementById('count-done').textContent        = done;
+  document.getElementById('count-done').textContent = done;
 }
 
 function renderTasks() {
-  const query  = searchInput.value.toLowerCase();
+  const query = searchInput.value.toLowerCase();
   let filtered = activeFilter === 'all' ? tasks : tasks.filter(t => t.status === activeFilter);
 
   if (query) filtered = filtered.filter(t =>
-    t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query))
+    t.title.toLowerCase().includes(query) ||
+    (t.description && t.description.toLowerCase().includes(query))
   );
 
   tasksList.innerHTML = '';
@@ -93,8 +94,8 @@ function buildCard(task) {
 
   const statusLabel = { pending: 'Não iniciada', in_progress: 'Em andamento', done: 'Concluída' };
   const statusClass = { pending: 'badge-pending', in_progress: 'badge-progress', done: 'badge-done' };
-  const prioClass   = { low: 'badge-low', medium: 'badge-medium', high: 'badge-high' };
-  const prioLabel   = { low: '↓ Baixa', medium: '→ Média', high: '↑ Alta' };
+  const prioClass = { low: 'badge-low', medium: 'badge-medium', high: 'badge-high' };
+  const prioLabel = { low: '↓ Baixa', medium: '→ Média', high: '↑ Alta' };
 
   card.innerHTML = `
     <div class="task-left">
@@ -148,12 +149,12 @@ modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) clo
 
 function openModal(task = null) {
   editingId = task ? task.id : null;
-  document.getElementById('modal-title').textContent   = task ? 'Editar tarefa' : 'Nova tarefa';
-  document.getElementById('task-title').value          = task ? task.title : '';
-  document.getElementById('task-desc').value           = task ? task.description : '';
-  document.getElementById('task-status').value         = task ? task.status : 'pending';
-  document.getElementById('task-priority').value       = task ? task.priority : 'medium';
-  document.getElementById('task-date').value           = task ? task.due_date : '';
+  document.getElementById('modal-title').textContent = task ? 'Editar tarefa' : 'Nova tarefa';
+  document.getElementById('task-title').value = task ? task.title : '';
+  document.getElementById('task-desc').value = task ? task.description : '';
+  document.getElementById('task-status').value = task ? task.status : 'pending';
+  document.getElementById('task-priority').value = task ? task.priority : 'medium';
+  document.getElementById('task-date').value = task ? task.due_date : '';
   document.getElementById('task-error').classList.add('hidden');
   modalOverlay.classList.remove('hidden');
   document.getElementById('task-title').focus();
@@ -175,17 +176,25 @@ document.getElementById('btn-save-task').addEventListener('click', async () => {
   const payload = {
     title,
     description: document.getElementById('task-desc').value.trim(),
-    status:      document.getElementById('task-status').value,
-    priority:    document.getElementById('task-priority').value,
-    due_date:    document.getElementById('task-date').value,
-    user_id:     user.id
+    status: document.getElementById('task-status').value,
+    priority: document.getElementById('task-priority').value,
+    due_date: document.getElementById('task-date').value,
+    user_id: user.id
   };
 
   try {
     if (editingId) {
-      await fetch(`${API}/tasks/${editingId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      await fetch(`${API}/tasks/${editingId}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
     } else {
-      await fetch(`${API}/tasks/`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      await fetch(`${API}/tasks/`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
     }
     closeModal();
     loadTasks();
@@ -195,7 +204,7 @@ document.getElementById('btn-save-task').addEventListener('click', async () => {
   }
 });
 
-// ─── Filters ──────────────────────────────────────────────────
+// ─── Filtros ───────────────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -222,10 +231,10 @@ function updateSectionTitle() {
   document.getElementById('tasks-section-title').textContent = titles[activeFilter] || 'Tarefas';
 }
 
-// ─── Search ───────────────────────────────────────────────────
+// ─── Busca ─────────────────────────────────────────────────────
 searchInput.addEventListener('input', () => renderTasks());
 
-// ─── Mobile sidebar toggle ────────────────────────────────────
+// ─── Sidebar mobile ────────────────────────────────────────────
 if (toggleBtn) {
   toggleBtn.addEventListener('click', () => {
     sidebarEl.classList.toggle('open');
@@ -237,18 +246,18 @@ if (toggleBtn) {
   });
 }
 
-// ─── Logout ───────────────────────────────────────────────────
+// ─── Logout ────────────────────────────────────────────────────
 document.getElementById('btn-logout').addEventListener('click', () => {
   localStorage.removeItem('user');
   window.location.href = '/';
 });
 
-// ─── Helpers ──────────────────────────────────────────────────
+// ─── Helpers ───────────────────────────────────────────────────
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function formatDate(str) {
   if (!str) return '';
-  const [y, m, d] = str.split('-');
+  const [y,m,d] = str.split('-');
   return `${d}/${m}/${y}`;
 }
