@@ -12,7 +12,6 @@ const emptyState   = document.getElementById('empty-state');
 const modalOverlay = document.getElementById('modal-overlay');
 const searchInput  = document.getElementById('search-input');
 
-// ── Mobile sidebar ─────────────────────────────────────────
 const sidebarEl  = document.getElementById('sidebar');
 const toggleBtn  = document.getElementById('sidebar-toggle');
 const backdropEl = document.getElementById('sidebar-backdrop');
@@ -26,7 +25,6 @@ backdropEl.addEventListener('click', () => {
   backdropEl.classList.remove('open');
 });
 
-// ── Init ────────────────────────────────────────────────────
 document.getElementById('user-name').textContent   = user.name;
 document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
 setGreeting();
@@ -40,7 +38,6 @@ function setGreeting() {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', opts);
 }
 
-// ── Load ────────────────────────────────────────────────────
 async function loadTasks() {
   try {
     const res = await fetch(`${API}/tasks/${user.id}`);
@@ -118,7 +115,6 @@ async function deleteTask(id) {
   loadTasks();
 }
 
-// ── Modal ───────────────────────────────────────────────────
 document.getElementById('btn-new-task').addEventListener('click', () => openModal());
 document.getElementById('modal-close').addEventListener('click', closeModal);
 document.getElementById('btn-cancel-task').addEventListener('click', closeModal);
@@ -161,7 +157,6 @@ document.getElementById('btn-save-task').addEventListener('click', async () => {
   } catch { errEl.textContent = 'Erro ao salvar.'; errEl.classList.remove('hidden'); }
 });
 
-// ── Filtros ─────────────────────────────────────────────────
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
