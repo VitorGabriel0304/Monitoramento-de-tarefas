@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TaskFlow — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
 </head>
 <body class="dashboard-page">
+
+  <!-- MOBILE TOGGLE -->
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
   <!-- SIDEBAR -->
   <aside class="sidebar">

@@ -227,6 +227,22 @@ function updateSectionTitle() {
 // ─── Search ───────────────────────────────────────────────────
 searchInput.addEventListener('input', () => renderTasks());
 
+// ─── Mobile sidebar toggle ────────────────────────────────────
+const sidebarEl   = document.querySelector('.sidebar');
+const toggleBtn   = document.getElementById('sidebar-toggle');
+const backdropEl  = document.getElementById('sidebar-backdrop');
+
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', () => {
+    sidebarEl.classList.toggle('open');
+    backdropEl.classList.toggle('open');
+  });
+  backdropEl.addEventListener('click', () => {
+    sidebarEl.classList.remove('open');
+    backdropEl.classList.remove('open');
+  });
+}
+
 // ─── Logout ───────────────────────────────────────────────────
 document.getElementById('btn-logout').addEventListener('click', () => {
   localStorage.removeItem('user');
