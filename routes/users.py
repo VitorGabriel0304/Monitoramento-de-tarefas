@@ -4,6 +4,7 @@ from models import db, User
 
 users_bp = Blueprint('users', __name__)
 
+# ── Cadastro de usuário ───────────────────────────────
 @users_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -22,7 +23,7 @@ def register():
     db.session.commit()
     return jsonify({'message': 'Usuário criado!', 'user': user.to_dict()}), 201
 
-
+# ── Login de usuário ──────────────────────────────────
 @users_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -31,7 +32,7 @@ def login():
         return jsonify({'error': 'E-mail ou senha inválidos.'}), 401
     return jsonify({'message': 'Login realizado!', 'user': user.to_dict()}), 200
 
-
+# ── Listar todos usuários ─────────────────────────────
 @users_bp.route('/', methods=['GET'])
 def list_users():
     users = User.query.all()

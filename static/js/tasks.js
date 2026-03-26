@@ -14,6 +14,9 @@ const tasksList    = document.getElementById('tasks-list');
 const emptyState   = document.getElementById('empty-state');
 const modalOverlay = document.getElementById('modal-overlay');
 const searchInput  = document.getElementById('search-input');
+const sidebarEl    = document.querySelector('.sidebar');
+const toggleBtn    = document.getElementById('sidebar-toggle');
+const backdropEl   = document.getElementById('sidebar-backdrop');
 
 // ─── Init ─────────────────────────────────────────────────────
 document.getElementById('user-name').textContent   = user.name;
@@ -26,7 +29,7 @@ loadTasks();
 function setGreeting() {
   const h = new Date().getHours();
   const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
-  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}! 👋`;
+  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}!`;
   const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', opts);
 }
@@ -67,11 +70,10 @@ function updateCounts() {
 
 function renderTasks() {
   const query  = searchInput.value.toLowerCase();
-  let filtered = tasks;
+  let filtered = activeFilter === 'all' ? tasks : tasks.filter(t => t.status === activeFilter);
 
-  if (activeFilter !== 'all') filtered = filtered.filter(t => t.status === activeFilter);
   if (query) filtered = filtered.filter(t =>
-    t.title.toLowerCase().includes(query) || t.description.toLowerCase().includes(query)
+    t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query))
   );
 
   tasksList.innerHTML = '';
@@ -181,13 +183,9 @@ document.getElementById('btn-save-task').addEventListener('click', async () => {
 
   try {
     if (editingId) {
-      await fetch(`${API}/tasks/${editingId}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      });
+      await fetch(`${API}/tasks/${editingId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
     } else {
-      await fetch(`${API}/tasks/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-      });
+      await fetch(`${API}/tasks/`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
     }
     closeModal();
     loadTasks();
@@ -228,10 +226,6 @@ function updateSectionTitle() {
 searchInput.addEventListener('input', () => renderTasks());
 
 // ─── Mobile sidebar toggle ────────────────────────────────────
-const sidebarEl   = document.querySelector('.sidebar');
-const toggleBtn   = document.getElementById('sidebar-toggle');
-const backdropEl  = document.getElementById('sidebar-backdrop');
-
 if (toggleBtn) {
   toggleBtn.addEventListener('click', () => {
     sidebarEl.classList.toggle('open');

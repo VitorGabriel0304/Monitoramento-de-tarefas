@@ -33,7 +33,7 @@ loadTasks();
 function setGreeting() {
   const h = new Date().getHours();
   const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
-  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}! 👋`;
+  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}!`;
   const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', opts);
 }
@@ -78,25 +78,25 @@ function buildCard(task) {
   const sLabel = { pending:'Não iniciada', in_progress:'Em andamento', done:'Concluída' };
   const sCls   = { pending:'badge-pending', in_progress:'badge-progress', done:'badge-done' };
   const pCls   = { low:'badge-low', medium:'badge-medium', high:'badge-high' };
-  const pLabel = { low:'↓ Baixa', medium:'→ Média', high:'↑ Alta' };
+  const pLabel = { low:'Baixa', medium:'Média', high:'Alta' };
   card.innerHTML = `
     <div class="task-left">
       <div class="task-meta">
         <span class="badge ${sCls[task.status]}">${sLabel[task.status]}</span>
         <span class="badge ${pCls[task.priority]}">${pLabel[task.priority]}</span>
-        ${task.due_date ? `<span class="task-date">📅 ${fmt(task.due_date)}</span>` : ''}
+        ${task.due_date ? `<span class="task-date">${fmt(task.due_date)}</span>` : ''}
       </div>
       <div class="task-title">${esc(task.title)}</div>
       ${task.description ? `<div class="task-desc">${esc(task.description)}</div>` : ''}
     </div>
     <div class="task-actions">
       <select class="status-select">
-        <option value="pending"     ${task.status==='pending'?'selected':''}>○ Não iniciada</option>
-        <option value="in_progress" ${task.status==='in_progress'?'selected':''}>◑ Em andamento</option>
-        <option value="done"        ${task.status==='done'?'selected':''}>● Concluída</option>
+        <option value="pending"     ${task.status==='pending'?'selected':''}>Não iniciada</option>
+        <option value="in_progress" ${task.status==='in_progress'?'selected':''}>Em andamento</option>
+        <option value="done"        ${task.status==='done'?'selected':''}>Concluída</option>
       </select>
-      <button class="btn-icon edit" title="Editar">✏️</button>
-      <button class="btn-icon delete" title="Excluir">🗑</button>
+      <button class="btn-icon edit" title="Editar">Editar</button>
+      <button class="btn-icon delete" title="Excluir">Excluir</button>
     </div>`;
   card.querySelector('.status-select').addEventListener('change', e => quickStatus(task.id, e.target.value));
   card.querySelector('.edit').addEventListener('click', () => openModal(task));
