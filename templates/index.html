@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskFlow — Entrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body class="auth-page">
+
+  <div class="auth-bg">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
+  </div>
+
+  <div class="auth-container">
+    <div class="auth-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-name">TaskFlow</span>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">Entrar</button>
+        <button class="tab-btn" data-tab="register">Criar conta</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div class="tab-panel active" id="tab-login">
+        <h2>Bem-vindo de volta</h2>
+        <p class="subtitle">Suas tarefas estão esperando por você.</p>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="login-email" placeholder="seu@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="login-password" placeholder="••••••••"/>
+        </div>
+        <div id="login-error" class="msg-error hidden"></div>
+        <button class="btn-primary" id="btn-login">Entrar</button>
+      </div>
+
+      <!-- REGISTER -->
+      <div class="tab-panel" id="tab-register">
+        <h2>Criar sua conta</h2>
+        <p class="subtitle">Comece a organizar seu dia agora.</p>
+        <div class="form-group">
+          <label>Nome completo</label>
+          <input type="text" id="reg-name" placeholder="João Silva"/>
+        </div>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="reg-password" placeholder="mínimo 6 caracteres"/>
+        </div>
+        <div id="reg-error" class="msg-error hidden"></div>
+        <div id="reg-success" class="msg-success hidden"></div>
+        <button class="btn-primary" id="btn-register">Criar conta</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>

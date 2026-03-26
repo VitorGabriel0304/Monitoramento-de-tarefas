@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskFlow — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body class="dashboard-page">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-name">TaskFlow</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-filter="all">
+        <span class="nav-icon">◈</span> Todas
+        <span class="nav-badge" id="count-all">0</span>
+      </a>
+      <a class="nav-item" data-filter="pending">
+        <span class="nav-icon">○</span> Não iniciadas
+        <span class="nav-badge" id="count-pending">0</span>
+      </a>
+      <a class="nav-item" data-filter="in_progress">
+        <span class="nav-icon">◑</span> Em andamento
+        <span class="nav-badge" id="count-in_progress">0</span>
+      </a>
+      <a class="nav-item" data-filter="done">
+        <span class="nav-icon">●</span> Concluídas
+        <span class="nav-badge" id="count-done">0</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">J</div>
+        <div>
+          <div class="user-name" id="user-name">João</div>
+          <div class="user-role">Membro</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout" title="Sair">⏻</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="dash-header">
+      <div>
+        <h1 id="dash-greeting">Bom dia!</h1>
+        <p class="dash-date" id="dash-date"></p>
+      </div>
+      <button class="btn-new-task" id="btn-new-task">+ Nova tarefa</button>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card" data-status="all">
+        <div class="stat-num" id="stat-all">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card pending" data-status="pending">
+        <div class="stat-num" id="stat-pending">0</div>
+        <div class="stat-label">Não iniciadas</div>
+      </div>
+      <div class="stat-card in-progress" data-status="in_progress">
+        <div class="stat-num" id="stat-in_progress">0</div>
+        <div class="stat-label">Em andamento</div>
+      </div>
+      <div class="stat-card done" data-status="done">
+        <div class="stat-num" id="stat-done">0</div>
+        <div class="stat-label">Concluídas</div>
+      </div>
+    </div>
+
+    <!-- TASKS LIST -->
+    <section class="tasks-section">
+      <div class="tasks-header">
+        <h2 id="tasks-section-title">Todas as tarefas</h2>
+        <input class="search-input" id="search-input" type="text" placeholder="Buscar tarefa..."/>
+      </div>
+      <div class="tasks-list" id="tasks-list">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">✦</div>
+          <p>Nenhuma tarefa ainda.<br/>Crie sua primeira tarefa!</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: NEW / EDIT TASK -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Nova tarefa</h3>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="task-id"/>
+        <div class="form-group">
+          <label>Título *</label>
+          <input type="text" id="task-title" placeholder="O que precisa ser feito?"/>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea id="task-desc" rows="3" placeholder="Detalhes opcionais..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="task-status">
+              <option value="pending">Não iniciada</option>
+              <option value="in_progress">Em andamento</option>
+              <option value="done">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Prioridade</label>
+            <select id="task-priority">
+              <option value="low">Baixa</option>
+              <option value="medium" selected>Média</option>
+              <option value="high">Alta</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Data limite</label>
+          <input type="date" id="task-date"/>
+        </div>
+        <div id="task-error" class="msg-error hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-task">Cancelar</button>
+        <button class="btn-primary" id="btn-save-task">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+</body>
+</html>

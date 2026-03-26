@@ -1,0 +1,60 @@
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+.Python
+
+# Ambiente virtual
+venv/
+env/
+.env/
+.venv/
+
+# ===== BANCO DE DADOS =====
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== FLASK =====
+instance/
+.webassets-cache
+
+# ===== VARIÁVEIS DE AMBIENTE =====
+.env
+.env.local
+.env.production
+
+# ===== SISTEMA =====
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Mac
+.DS_Store
+.AppleDouble
+
+# Linux
+*~
+
+# ===== EDITORES =====
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ===== LOGS =====
+*.log
+logs/
+
+# ===== NODE (caso use futuramente) =====
+node_modules/
+npm-debug.log*
