@@ -1,18 +1,18 @@
-// ─── Configuração da API ─────────────────────────────────────────
+// ─── Configuração da API ─────────────────────────
 const API = window.location.hostname.includes('localhost')
   ? 'http://localhost:5000/api'
   : 'https://minhastafefas.up.railway.app/api';
 
-// ─── Auth guard ──────────────────────────────────────────────────
+// ─── Auth guard ────────────────────────────────
 const user = JSON.parse(localStorage.getItem('user'));
 if (!user) window.location.href = '/';
 
-// ─── Estado do App ───────────────────────────────────────────────
+// ─── Estado do App ─────────────────────────────
 let tasks = [];
 let activeFilter = 'all';
 let editingId = null;
 
-// ─── Referências do DOM ─────────────────────────────────────────
+// ─── Referências do DOM ────────────────────────
 const tasksList = document.getElementById('tasks-list');
 const emptyState = document.getElementById('empty-state');
 const modalOverlay = document.getElementById('modal-overlay');
@@ -21,13 +21,13 @@ const sidebarEl = document.querySelector('.sidebar');
 const toggleBtn = document.getElementById('sidebar-toggle');
 const backdropEl = document.getElementById('sidebar-backdrop');
 
-// ─── Inicialização ──────────────────────────────────────────────
+// ─── Inicialização ─────────────────────────────
 document.getElementById('user-name').textContent = user.name;
 document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
 setGreeting();
 loadTasks();
 
-// ─── Saudação e data ─────────────────────────────────────────────
+// ─── Saudação e data ───────────────────────────
 function setGreeting() {
   const h = new Date().getHours();
   const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
@@ -36,7 +36,7 @@ function setGreeting() {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', opts);
 }
 
-// ─── Carregar tarefas ────────────────────────────────────────────
+// ─── Carregar tarefas ─────────────────────────
 async function loadTasks() {
   try {
     const res = await fetch(`${API}/tasks/${user.id}`);
@@ -47,7 +47,7 @@ async function loadTasks() {
   }
 }
 
-// ─── Renderização ───────────────────────────────────────────────
+// ─── Renderização ─────────────────────────────
 function renderAll() {
   updateCounts();
   renderTasks();
@@ -70,7 +70,6 @@ function updateCounts() {
   document.getElementById('count-done').textContent = done;
 }
 
-// ─── Renderização das tarefas ───────────────────────────────────
 function renderTasks() {
   const query = searchInput.value.toLowerCase();
   let filtered = activeFilter === 'all' ? tasks : tasks.filter(t => t.status === activeFilter);
@@ -127,7 +126,7 @@ function buildCard(task) {
   return card;
 }
 
-// ─── Atualizar status rápido ─────────────────────────────────────
+// ─── Quick status ─────────────────────────────
 async function quickStatus(id, status) {
   await fetch(`${API}/tasks/${id}`, {
     method: 'PUT',
@@ -137,125 +136,14 @@ async function quickStatus(id, status) {
   loadTasks();
 }
 
-// ─── Deletar tarefa ─────────────────────────────────────────────
+// ─── Delete ──────────────────────────────────
 async function deleteTask(id) {
   if (!confirm('Deseja remover esta tarefa?')) return;
   await fetch(`${API}/tasks/${id}`, { method: 'DELETE' });
   loadTasks();
 }
 
-// ─── Modal ──────────────────────────────────────────────────────
-document.getElementById('btn-new-task').addEventListener('click', () => openModal());
-document.getElementById('modal-close').addEventListener('click', closeModal);
-document.getElementById('btn-cancel-task').addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
-
-function openModal(task = null) {
-  editingId = task ? task.id : null;
-  document.getElementById('modal-title').textContent = task ? 'Editar tarefa' : 'Nova tarefa';
-  document.getElementById('task-title').value = task ? task.title : '';
-  document.getElementById('task-desc').value = task ? task.description : '';
-  document.getElementById('task-status').value = task ? task.status : 'pending';
-  document.getElementById('task-priority').value = task ? task.priority : 'medium';
-  document.getElementById('task-date').value = task ? task.due_date : '';
-  document.getElementById('task-error').classList.add('hidden');
-  modalOverlay.classList.remove('hidden');
-  document.getElementById('task-title').focus();
-}
-
-function closeModal() {
-  modalOverlay.classList.add('hidden');
-  editingId = null;
-}
-
-// ─── Salvar tarefa ──────────────────────────────────────────────
-document.getElementById('btn-save-task').addEventListener('click', async () => {
-  const title = document.getElementById('task-title').value.trim();
-  const errEl = document.getElementById('task-error');
-  errEl.classList.add('hidden');
-
-  if (!title) { errEl.textContent = 'O título é obrigatório.'; errEl.classList.remove('hidden'); return; }
-
-  const payload = {
-    title,
-    description: document.getElementById('task-desc').value.trim(),
-    status: document.getElementById('task-status').value,
-    priority: document.getElementById('task-priority').value,
-    due_date: document.getElementById('task-date').value,
-    user_id: user.id
-  };
-
-  try {
-    if (editingId) {
-      await fetch(`${API}/tasks/${editingId}`, {
-        method: 'PUT',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-    } else {
-      await fetch(`${API}/tasks/`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-    }
-    closeModal();
-    loadTasks();
-  } catch {
-    errEl.textContent = 'Erro ao salvar. Tente novamente.';
-    errEl.classList.remove('hidden');
-  }
-});
-
-// ─── Filtros ───────────────────────────────────────────────────
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    activeFilter = item.dataset.filter;
-    updateSectionTitle();
-    renderTasks();
-  });
-});
-
-document.querySelectorAll('.stat-card').forEach(card => {
-  card.addEventListener('click', () => {
-    activeFilter = card.dataset.status;
-    document.querySelectorAll('.nav-item').forEach(i => {
-      i.classList.toggle('active', i.dataset.filter === activeFilter);
-    });
-    updateSectionTitle();
-    renderTasks();
-  });
-});
-
-function updateSectionTitle() {
-  const titles = { all: 'Todas as tarefas', pending: 'Não iniciadas', in_progress: 'Em andamento', done: 'Concluídas' };
-  document.getElementById('tasks-section-title').textContent = titles[activeFilter] || 'Tarefas';
-}
-
-// ─── Busca ─────────────────────────────────────────────────────
-searchInput.addEventListener('input', () => renderTasks());
-
-// ─── Sidebar mobile ────────────────────────────────────────────
-if (toggleBtn) {
-  toggleBtn.addEventListener('click', () => {
-    sidebarEl.classList.toggle('open');
-    backdropEl.classList.toggle('open');
-  });
-  backdropEl.addEventListener('click', () => {
-    sidebarEl.classList.remove('open');
-    backdropEl.classList.remove('open');
-  });
-}
-
-// ─── Logout ────────────────────────────────────────────────────
-document.getElementById('btn-logout').addEventListener('click', () => {
-  localStorage.removeItem('user');
-  window.location.href = '/';
-});
-
-// ─── Helpers ───────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }

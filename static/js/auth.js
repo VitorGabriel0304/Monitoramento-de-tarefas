@@ -1,15 +1,15 @@
-// ─── Configuração da API ─────────────────────────────────────────
+// ─── Configuração da API ─────────────────────────
 const API = window.location.hostname.includes('localhost')
   ? 'http://localhost:5000/api'
   : 'https://minhastafefas.up.railway.app/api';
 
-// ─── Formulários ─────────────────────────────────────────────────
+// ─── Formulários ─────────────────────────────────
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const loginError = document.getElementById('login-error');
 const registerError = document.getElementById('register-error');
 
-// ─── Login ───────────────────────────────────────────────────────
+// ─── Login ───────────────────────────────────────
 if (loginForm) {
   loginForm.addEventListener('submit', async e => {
     e.preventDefault();
@@ -23,7 +23,7 @@ if (loginForm) {
     try {
       const res = await fetch(`${API}/users/login`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify(payload)
       });
 
@@ -32,13 +32,14 @@ if (loginForm) {
       localStorage.setItem('user', JSON.stringify(data));
       window.location.href = '/dashboard';
     } catch (err) {
+      console.log(err);
       loginError.textContent = 'Não foi possível conectar ao servidor ou login inválido.';
       loginError.classList.remove('hidden');
     }
   });
 }
 
-// ─── Registro ───────────────────────────────────────────────────
+// ─── Registro ───────────────────────────────────
 if (registerForm) {
   registerForm.addEventListener('submit', async e => {
     e.preventDefault();
@@ -53,7 +54,7 @@ if (registerForm) {
     try {
       const res = await fetch(`${API}/users/register`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify(payload)
       });
 
@@ -62,6 +63,7 @@ if (registerForm) {
       localStorage.setItem('user', JSON.stringify(data));
       window.location.href = '/dashboard';
     } catch (err) {
+      console.log(err);
       registerError.textContent = 'Não foi possível conectar ao servidor ou email já cadastrado.';
       registerError.classList.remove('hidden');
     }

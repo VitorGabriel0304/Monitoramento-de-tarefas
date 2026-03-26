@@ -1,18 +1,9 @@
 from flask import Blueprint, request, jsonify
 from models import db, Task
-from datetime import datetime
 
 tasks_bp = Blueprint('tasks', __name__)
 
-def parse_date(date_str):
-    if not date_str:
-        return None
-    try:
-        return datetime.strptime(date_str, '%Y-%m-%d').date()
-    except ValueError:
-        return None
-
-# GET /api/tasks/<user_id>
+# ─── Listar tarefas do usuário ───────────────
 @tasks_bp.route('/<int:user_id>', methods=['GET'])
 def get_tasks(user_id):
     tasks = Task.query.filter_by(user_id=user_id).all()
@@ -22,42 +13,42 @@ def get_tasks(user_id):
         'description': t.description,
         'status': t.status,
         'priority': t.priority,
-        'due_date': t.due_date.isoformat() if t.due_date else ''
+        'due_date': t.due_date
     } for t in tasks])
 
-# POST /api/tasks/
+# ─── Criar nova tarefa ───────────────────────
 @tasks_bp.route('/', methods=['POST'])
 def create_task():
     data = request.json
     task = Task(
+        user_id=data['user_id'],
         title=data['title'],
-        description=data.get('description'),
+        description=data.get('description', ''),
         status=data.get('status', 'pending'),
         priority=data.get('priority', 'medium'),
-        due_date=parse_date(data.get('due_date')),
-        user_id=data['user_id']
+        due_date=data.get('due_date', None)
     )
     db.session.add(task)
     db.session.commit()
-    return jsonify({'id': task.id}), 201
+    return jsonify({'id': task.id})
 
-# PUT /api/tasks/<id>
-@tasks_bp.route('/<int:task_id>', methods=['PUT'])
-def update_task(task_id):
-    task = Task.query.get_or_404(task_id)
+# ─── Atualizar tarefa ───────────────────────
+@tasks_bp.route('/<int:id>', methods=['PUT'])
+def update_task(id):
+    task = Task.query.get_or_404(id)
     data = request.json
     task.title = data.get('title', task.title)
     task.description = data.get('description', task.description)
     task.status = data.get('status', task.status)
     task.priority = data.get('priority', task.priority)
-    task.due_date = parse_date(data.get('due_date')) or task.due_date
+    task.due_date = data.get('due_date', task.due_date)
     db.session.commit()
-    return jsonify({'success': True})
+    return jsonify({'message': 'Atualizado'})
 
-# DELETE /api/tasks/<id>
-@tasks_bp.route('/<int:task_id>', methods=['DELETE'])
-def delete_task(task_id):
-    task = Task.query.get_or_404(task_id)
+# ─── Deletar tarefa ─────────────────────────
+@tasks_bp.route('/<int:id>', methods=['DELETE'])
+def delete_task(id):
+    task = Task.query.get_or_404(id)
     db.session.delete(task)
     db.session.commit()
-    return jsonify({'success': True})
+    return jsonify({'message': 'Removido'})

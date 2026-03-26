@@ -1,18 +1,18 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User
+from werkzeug.security import generate_password_hash, check_password_hash
 
 users_bp = Blueprint('users', __name__)
 
-# ── Cadastro de usuário ───────────────────────────────
+# ─── Registro ───────────────────────────────
 @users_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    if not data or not data.get('name') or not data.get('email') or not data.get('password'):
-        return jsonify({'error': 'Preencha todos os campos.'}), 400
+    data = request.json
+    if not data.get('email') or not data.get('password') or not data.get('name'):
+        return jsonify({'error': 'Todos os campos são obrigatórios'}), 400
 
     if User.query.filter_by(email=data['email']).first():
-        return jsonify({'error': 'E-mail já cadastrado.'}), 409
+        return jsonify({'error': 'Email já cadastrado'}), 400
 
     user = User(
         name=data['name'],
@@ -21,19 +21,15 @@ def register():
     )
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'Usuário criado!', 'user': user.to_dict()}), 201
 
-# ── Login de usuário ──────────────────────────────────
+    return jsonify({'id': user.id, 'name': user.name, 'email': user.email})
+
+# ─── Login ─────────────────────────────────
 @users_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.json
     user = User.query.filter_by(email=data.get('email')).first()
-    if not user or not check_password_hash(user.password, data.get('password', '')):
-        return jsonify({'error': 'E-mail ou senha inválidos.'}), 401
-    return jsonify({'message': 'Login realizado!', 'user': user.to_dict()}), 200
+    if not user or not check_password_hash(user.password, data.get('password')):
+        return jsonify({'error': 'Login inválido'}), 401
 
-# ── Listar todos usuários ─────────────────────────────
-@users_bp.route('/', methods=['GET'])
-def list_users():
-    users = User.query.all()
-    return jsonify([u.to_dict() for u in users]), 200
+    return jsonify({'id': user.id, 'name': user.name, 'email': user.email})
