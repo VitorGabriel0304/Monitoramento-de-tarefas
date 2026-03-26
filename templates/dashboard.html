@@ -4,17 +4,16 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TaskFlow — Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
 </head>
 <body class="dashboard-page">
 
-  <!-- MOBILE TOGGLE -->
+  <!-- BOTÃO MENU MOBILE -->
   <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
   <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <span class="brand-icon">⬡</span>
       <span class="brand-name">TaskFlow</span>
@@ -59,7 +58,6 @@
       <button class="btn-new-task" id="btn-new-task">+ Nova tarefa</button>
     </header>
 
-    <!-- STATS -->
     <div class="stats-row">
       <div class="stat-card" data-status="all">
         <div class="stat-num" id="stat-all">0</div>
@@ -79,7 +77,6 @@
       </div>
     </div>
 
-    <!-- TASKS LIST -->
     <section class="tasks-section">
       <div class="tasks-header">
         <h2 id="tasks-section-title">Todas as tarefas</h2>
@@ -94,7 +91,7 @@
     </section>
   </main>
 
-  <!-- MODAL: NEW / EDIT TASK -->
+  <!-- MODAL -->
   <div class="modal-overlay hidden" id="modal-overlay">
     <div class="modal">
       <div class="modal-header">
