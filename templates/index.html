@@ -26,6 +26,7 @@
         <button class="tab-btn" data-tab="register">Criar conta</button>
       </div>
 
+      <!-- LOGIN -->
       <div class="tab-panel active" id="tab-login">
         <h2>Bem-vindo de volta</h2>
         <p class="subtitle">Suas tarefas estão esperando por você.</p>
@@ -39,8 +40,12 @@
         </div>
         <div id="login-error" class="msg-error hidden"></div>
         <button class="btn-primary" id="btn-login">Entrar</button>
+        <div class="forgot-link-wrapper">
+          <button class="btn-link" id="btn-forgot">Esqueceu sua senha?</button>
+        </div>
       </div>
 
+      <!-- REGISTER -->
       <div class="tab-panel" id="tab-register">
         <h2>Criar sua conta</h2>
         <p class="subtitle">Comece a organizar seu dia agora.</p>
@@ -56,14 +61,28 @@
           <label>Senha</label>
           <input type="password" id="reg-password" placeholder="mínimo 6 caracteres"/>
         </div>
-        <div id="reg-error" class="msg-error hidden"></div>
+        <div id="reg-error"   class="msg-error hidden"></div>
         <div id="reg-success" class="msg-success hidden"></div>
         <button class="btn-primary" id="btn-register">Criar conta</button>
       </div>
+
+      <!-- ESQUECEU A SENHA -->
+      <div class="tab-panel" id="forgot-panel">
+        <button class="btn-back" id="btn-back-login">← Voltar</button>
+        <h2>Recuperar senha</h2>
+        <p class="subtitle">Informe seu e-mail e enviaremos as instruções para redefinir sua senha.</p>
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" id="forgot-email" placeholder="seu@email.com"/>
+        </div>
+        <div id="forgot-error"   class="msg-error hidden"></div>
+        <div id="forgot-success" class="msg-success hidden"></div>
+        <button class="btn-primary" id="btn-send-reset">Enviar instruções</button>
+      </div>
+
     </div>
   </div>
 
-  <script src="/static/js/auth.js"></script>
-
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
 </body>
 </html>

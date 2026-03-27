@@ -34,6 +34,10 @@ def index():
 def dashboard():
     return render_template('dashboard.html')
 
+@app.route('/reset-password')
+def reset_password_page():
+    return render_template('reset_password.html')
+
 # ─── Criação das tabelas ──────────────────────
 with app.app_context():
     db.create_all()
