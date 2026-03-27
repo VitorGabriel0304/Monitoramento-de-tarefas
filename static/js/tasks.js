@@ -1,39 +1,38 @@
-// ─── Configuração da API ─────────────────────────
+// ─── API ─────────────────────────────────────
 const API = window.location.hostname.includes('localhost')
   ? 'http://localhost:5000/api'
   : 'https://minhastafefas.up.railway.app/api';
 
-// ─── Auth guard ────────────────────────────────
+// ─── Auth guard ──────────────────────────────
 const user = JSON.parse(localStorage.getItem('user'));
 if (!user) window.location.href = '/';
 
-// ─── Estado do App ─────────────────────────────
-let tasks = [];
+// ─── Estado ──────────────────────────────────
+let tasks        = [];
 let activeFilter = 'all';
-let editingId = null;
+let editingId    = null;
 
-// ─── Referências do DOM ────────────────────────
+// ─── DOM ─────────────────────────────────────
 const tasksList    = document.getElementById('tasks-list');
 const emptyState   = document.getElementById('empty-state');
 const modalOverlay = document.getElementById('modal-overlay');
 const searchInput  = document.getElementById('search-input');
-const sidebarEl    = document.getElementById('sidebar');
-const toggleBtn    = document.getElementById('sidebar-toggle');
-const backdropEl   = document.getElementById('sidebar-backdrop');
 
-// ─── Inicialização ─────────────────────────────
-document.getElementById('user-name').textContent = user.name;
-document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
+// ─── Init ─────────────────────────────────────
+document.getElementById('user-name')  && (document.getElementById('user-name').textContent  = user.name);
+document.getElementById('user-avatar') && (document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase());
 setGreeting();
 loadTasks();
 
-// ─── Saudação e data ───────────────────────────
+// ─── Saudação ─────────────────────────────────
 function setGreeting() {
   const h     = new Date().getHours();
   const greet = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
-  document.getElementById('dash-greeting').textContent = `${greet}, ${user.name.split(' ')[0]}! 👋`;
-  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('pt-BR', opts);
+  const el    = document.getElementById('dash-greeting');
+  if (el) el.textContent = `${greet}, ${user.name.split(' ')[0]}! 👋`;
+  const opts  = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateEl = document.getElementById('dash-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR', opts);
 }
 
 // ─── Carregar tarefas ─────────────────────────
@@ -54,35 +53,50 @@ function renderAll() {
 }
 
 function updateCounts() {
-  const total      = tasks.length;
-  const pending    = tasks.filter(t => t.status === 'pending').length;
-  const inProgress = tasks.filter(t => t.status === 'in_progress').length;
-  const done       = tasks.filter(t => t.status === 'done').length;
+  const total   = tasks.length;
+  const pending = tasks.filter(t => t.status === 'pending').length;
+  const inProg  = tasks.filter(t => t.status === 'in_progress').length;
+  const done    = tasks.filter(t => t.status === 'done').length;
 
-  document.getElementById('stat-all').textContent        = total;
-  document.getElementById('stat-pending').textContent    = pending;
-  document.getElementById('stat-in_progress').textContent = inProgress;
-  document.getElementById('stat-done').textContent       = done;
+  // Sidebar desktop
+  setText('stat-all',        total);
+  setText('stat-pending',    pending);
+  setText('stat-in_progress', inProg);
+  setText('stat-done',       done);
+  setText('count-all',       total);
+  setText('count-pending',   pending);
+  setText('count-in_progress', inProg);
+  setText('count-done',      done);
 
-  document.getElementById('count-all').textContent        = total;
-  document.getElementById('count-pending').textContent    = pending;
-  document.getElementById('count-in_progress').textContent = inProgress;
-  document.getElementById('count-done').textContent       = done;
+  // Bottom nav mobile badges
+  setBadge('bnav-count-all',        total);
+  setBadge('bnav-count-pending',    pending);
+  setBadge('bnav-count-in_progress', inProg);
+  setBadge('bnav-count-done',       done);
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setBadge(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val > 0) { el.textContent = val > 99 ? '99+' : val; el.style.display = 'block'; }
+  else         { el.style.display = 'none'; }
 }
 
 function renderTasks() {
-  const query = searchInput.value.toLowerCase();
+  const query  = searchInput ? searchInput.value.toLowerCase() : '';
   let filtered = activeFilter === 'all' ? tasks : tasks.filter(t => t.status === activeFilter);
-
   if (query) filtered = filtered.filter(t =>
     t.title.toLowerCase().includes(query) ||
     (t.description && t.description.toLowerCase().includes(query))
   );
 
-  // Limpa preservando empty-state
-  Array.from(tasksList.children).forEach(c => {
-    if (c.id !== 'empty-state') c.remove();
-  });
+  // Limpa mantendo empty-state
+  Array.from(tasksList.children).forEach(c => { if (c.id !== 'empty-state') c.remove(); });
 
   if (filtered.length === 0) {
     tasksList.appendChild(emptyState);
@@ -139,51 +153,44 @@ async function quickStatus(id, status) {
       body: JSON.stringify({ status })
     });
     loadTasks();
-  } catch {
-    console.error('Erro ao atualizar status');
-  }
+  } catch { console.error('Erro ao atualizar'); }
 }
 
 // ─── Delete ──────────────────────────────────
 async function deleteTask(id) {
-  if (!confirm('Deseja remover esta tarefa?')) return;
+  if (!confirm('Remover esta tarefa?')) return;
   try {
     await fetch(`${API}/tasks/${id}`, { method: 'DELETE' });
     loadTasks();
-  } catch {
-    console.error('Erro ao deletar tarefa');
-  }
+  } catch { console.error('Erro ao deletar'); }
 }
 
 // ─── Modal ────────────────────────────────────
 function openModal(task = null) {
   editingId = task ? task.id : null;
-  document.getElementById('modal-title').textContent  = task ? 'Editar tarefa' : 'Nova tarefa';
-  document.getElementById('task-id').value            = task ? task.id : '';
-  document.getElementById('task-title').value         = task ? task.title : '';
-  document.getElementById('task-desc').value          = task ? (task.description || '') : '';
-  document.getElementById('task-status').value        = task ? task.status : 'pending';
-  document.getElementById('task-priority').value      = task ? task.priority : 'medium';
-  document.getElementById('task-date').value          = task ? (task.due_date || '') : '';
+  document.getElementById('modal-title').textContent   = task ? 'Editar tarefa' : 'Nova tarefa';
+  document.getElementById('task-id').value             = task ? task.id : '';
+  document.getElementById('task-title').value          = task ? task.title : '';
+  document.getElementById('task-desc').value           = task ? (task.description || '') : '';
+  document.getElementById('task-status').value         = task ? task.status : 'pending';
+  document.getElementById('task-priority').value       = task ? task.priority : 'medium';
+  document.getElementById('task-date').value           = task ? (task.due_date || '') : '';
   document.getElementById('task-error').classList.add('hidden');
   modalOverlay.classList.remove('hidden');
-  document.getElementById('task-title').focus();
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('task-title').focus(), 300);
 }
 
 function closeModal() {
   modalOverlay.classList.add('hidden');
+  document.body.style.overflow = '';
   editingId = null;
 }
 
 async function saveTask() {
-  const title    = document.getElementById('task-title').value.trim();
-  const errEl    = document.getElementById('task-error');
-
-  if (!title) {
-    errEl.textContent = 'O título é obrigatório.';
-    errEl.classList.remove('hidden');
-    return;
-  }
+  const title = document.getElementById('task-title').value.trim();
+  const errEl = document.getElementById('task-error');
+  if (!title) { errEl.textContent = 'O título é obrigatório.'; errEl.classList.remove('hidden'); return; }
   errEl.classList.add('hidden');
 
   const payload = {
@@ -195,21 +202,18 @@ async function saveTask() {
     due_date:    document.getElementById('task-date').value || null
   };
 
-  const btnSave = document.getElementById('btn-save-task');
-  btnSave.disabled = true;
-  btnSave.textContent = 'Salvando...';
+  const btn = document.getElementById('btn-save-task');
+  btn.disabled = true; btn.textContent = 'Salvando...';
 
   try {
     if (editingId) {
       await fetch(`${API}/tasks/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
     } else {
       await fetch(`${API}/tasks/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
     }
@@ -219,87 +223,69 @@ async function saveTask() {
     errEl.textContent = 'Erro ao salvar. Tente novamente.';
     errEl.classList.remove('hidden');
   } finally {
-    btnSave.disabled = false;
-    btnSave.textContent = 'Salvar';
+    btn.disabled = false; btn.textContent = 'Salvar';
   }
 }
 
-// ─── Event Listeners — Modal ──────────────────
+// ─── Filtro (sidebar + bottom nav) ────────────
+function applyFilter(filter) {
+  activeFilter = filter;
+  const titles = { all: 'Todas as tarefas', pending: 'Não iniciadas', in_progress: 'Em andamento', done: 'Concluídas' };
+  setText('tasks-section-title', titles[filter]);
+
+  // Sidebar desktop
+  document.querySelectorAll('.nav-item').forEach(i =>
+    i.classList.toggle('active', i.dataset.filter === filter)
+  );
+  // Bottom nav mobile
+  document.querySelectorAll('.bottom-nav-item[data-filter]').forEach(i =>
+    i.classList.toggle('active', i.dataset.filter === filter)
+  );
+
+  renderTasks();
+}
+
+// ─── Listeners ────────────────────────────────
+
+// Modal
 document.getElementById('btn-new-task').addEventListener('click',    () => openModal());
 document.getElementById('modal-close').addEventListener('click',     closeModal);
 document.getElementById('btn-cancel-task').addEventListener('click', closeModal);
 document.getElementById('btn-save-task').addEventListener('click',   saveTask);
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+document.getElementById('task-title').addEventListener('keydown', e => { if (e.key === 'Enter') saveTask(); });
 
-// Fechar ao clicar fora
-modalOverlay.addEventListener('click', e => {
-  if (e.target === modalOverlay) closeModal();
-});
+// Sidebar nav desktop
+document.querySelectorAll('.nav-item').forEach(item =>
+  item.addEventListener('click', () => applyFilter(item.dataset.filter))
+);
 
-// Enter no título salva
-document.getElementById('task-title').addEventListener('keydown', e => {
-  if (e.key === 'Enter') saveTask();
-});
+// Bottom nav mobile
+document.querySelectorAll('.bottom-nav-item[data-filter]').forEach(item =>
+  item.addEventListener('click', () => applyFilter(item.dataset.filter))
+);
 
-// ─── Event Listeners — Sidebar Mobile ─────────
-toggleBtn.addEventListener('click', () => {
-  sidebarEl.classList.toggle('open');
-  backdropEl.classList.toggle('open');
-});
-backdropEl.addEventListener('click', () => {
-  sidebarEl.classList.remove('open');
-  backdropEl.classList.remove('open');
-});
+// Logout (sidebar + bottom nav)
+document.getElementById('btn-logout') && document.getElementById('btn-logout').addEventListener('click', doLogout);
+document.getElementById('bnav-logout') && document.getElementById('bnav-logout').addEventListener('click', doLogout);
+function doLogout() {
+  if (confirm('Deseja sair?')) { localStorage.removeItem('user'); window.location.href = '/'; }
+}
 
-// ─── Event Listeners — Filtros Nav ────────────
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    activeFilter = item.dataset.filter;
-    const titles = { all: 'Todas as tarefas', pending: 'Não iniciadas', in_progress: 'Em andamento', done: 'Concluídas' };
-    document.getElementById('tasks-section-title').textContent = titles[activeFilter];
-    renderTasks();
-    // Fecha sidebar no mobile
-    sidebarEl.classList.remove('open');
-    backdropEl.classList.remove('open');
-  });
-});
+// Stat cards
+document.querySelectorAll('.stat-card').forEach(card =>
+  card.addEventListener('click', () => applyFilter(card.dataset.status))
+);
 
-// ─── Event Listeners — Cards de Stats ─────────
-document.querySelectorAll('.stat-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const status = card.dataset.status;
-    activeFilter = status;
-    document.querySelectorAll('.nav-item').forEach(i => {
-      i.classList.toggle('active', i.dataset.filter === status);
-    });
-    const titles = { all: 'Todas as tarefas', pending: 'Não iniciadas', in_progress: 'Em andamento', done: 'Concluídas' };
-    document.getElementById('tasks-section-title').textContent = titles[activeFilter];
-    renderTasks();
-  });
-});
-
-// ─── Event Listener — Busca ───────────────────
-searchInput.addEventListener('input', renderTasks);
-
-// ─── Event Listener — Logout ──────────────────
-document.getElementById('btn-logout').addEventListener('click', () => {
-  if (confirm('Deseja sair?')) {
-    localStorage.removeItem('user');
-    window.location.href = '/';
-  }
-});
+// Busca
+searchInput && searchInput.addEventListener('input', renderTasks);
 
 // ─── Helpers ──────────────────────────────────
 function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
-
 function formatDate(str) {
   if (!str) return '';
-  const [y, m, d] = str.split('-');
+  const [y,m,d] = str.split('-');
   return `${d}/${m}/${y}`;
 }

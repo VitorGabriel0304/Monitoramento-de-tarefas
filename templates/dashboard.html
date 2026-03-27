@@ -2,19 +2,18 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TaskFlow — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>TaskFlow</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
 </head>
 <body class="dashboard-page">
 
-  <!-- BOTÃO MENU MOBILE -->
-  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
-  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
-
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (desktop) -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
+    <div class="auth-brand">
       <span class="brand-icon">⬡</span>
       <span class="brand-name">TaskFlow</span>
     </div>
@@ -50,14 +49,18 @@
 
   <!-- MAIN -->
   <main class="main-content">
+
+    <!-- TOP BAR (vira app bar no mobile) -->
     <header class="dash-header">
       <div>
-        <h1 id="dash-greeting">Bom dia!</h1>
+        <h1 id="dash-greeting">Olá! 👋</h1>
         <p class="dash-date" id="dash-date"></p>
       </div>
+      <!-- Desktop: botão normal | Mobile: vira botão + redondo via CSS -->
       <button class="btn-new-task" id="btn-new-task">+ Nova tarefa</button>
     </header>
 
+    <!-- STATS -->
     <div class="stats-row">
       <div class="stat-card" data-status="all">
         <div class="stat-num" id="stat-all">0</div>
@@ -77,10 +80,11 @@
       </div>
     </div>
 
+    <!-- TASKS -->
     <section class="tasks-section">
       <div class="tasks-header">
         <h2 id="tasks-section-title">Todas as tarefas</h2>
-        <input class="search-input" id="search-input" type="text" placeholder="Buscar tarefa..."/>
+        <input class="search-input" id="search-input" type="text" placeholder="🔍 Buscar tarefa..."/>
       </div>
       <div class="tasks-list" id="tasks-list">
         <div class="empty-state" id="empty-state">
@@ -89,7 +93,36 @@
         </div>
       </div>
     </section>
+
   </main>
+
+  <!-- BOTTOM NAV (só aparece no mobile via CSS) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-item active" data-filter="all">
+      <span class="bnav-icon">◈</span>
+      <span class="bnav-label">Todas</span>
+      <span class="bnav-badge" id="bnav-count-all" style="display:none"></span>
+    </div>
+    <div class="bottom-nav-item" data-filter="pending">
+      <span class="bnav-icon">○</span>
+      <span class="bnav-label">A fazer</span>
+      <span class="bnav-badge" id="bnav-count-pending" style="display:none"></span>
+    </div>
+    <div class="bottom-nav-item" data-filter="in_progress">
+      <span class="bnav-icon">◑</span>
+      <span class="bnav-label">Em curso</span>
+      <span class="bnav-badge" id="bnav-count-in_progress" style="display:none"></span>
+    </div>
+    <div class="bottom-nav-item" data-filter="done">
+      <span class="bnav-icon">●</span>
+      <span class="bnav-label">Prontas</span>
+      <span class="bnav-badge" id="bnav-count-done" style="display:none"></span>
+    </div>
+    <div class="bottom-nav-item" id="bnav-logout">
+      <span class="bnav-icon">⏻</span>
+      <span class="bnav-label">Sair</span>
+    </div>
+  </nav>
 
   <!-- MODAL -->
   <div class="modal-overlay hidden" id="modal-overlay">
@@ -134,13 +167,11 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" id="btn-cancel-task">Cancelar</button>
-        <button class="btn-primary" id="btn-save-task">Salvar</button>
+        <button class="btn-primary"   id="btn-save-task">Salvar</button>
       </div>
     </div>
   </div>
 
-
-<script src="/static/js/tasks.js"></script>
-
+  <script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
 </body>
 </html>

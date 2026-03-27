@@ -2,10 +2,10 @@ from flask import Blueprint, request, jsonify
 from models import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import os
+import urllib.request
+import urllib.error
+import json
 
 users_bp = Blueprint('users', __name__)
 
@@ -29,6 +29,7 @@ def register():
 
     return jsonify({'id': user.id, 'name': user.name, 'email': user.email})
 
+
 # ─── Login ─────────────────────────────────
 @users_bp.route('/login', methods=['POST'])
 def login():
@@ -38,6 +39,7 @@ def login():
         return jsonify({'error': 'E-mail ou senha inválidos'}), 401
 
     return jsonify({'id': user.id, 'name': user.name, 'email': user.email})
+
 
 # ─── Esqueceu a Senha ──────────────────────
 @users_bp.route('/forgot-password', methods=['POST'])
@@ -50,64 +52,51 @@ def forgot_password():
 
     user = User.query.filter_by(email=email).first()
 
-    # Sempre retorna 200 para não revelar se o e-mail existe
+    # Sempre retorna 200 — não revela se o e-mail existe
     if not user:
         return jsonify({'message': 'Se o e-mail estiver cadastrado, você receberá as instruções.'})
 
-    # Gera token seguro e salva no usuário
     token = secrets.token_urlsafe(32)
     user.reset_token = token
     db.session.commit()
 
-    # ── Monta e-mail ──────────────────────────────────────────────
-    reset_url  = f"{os.environ.get('APP_URL', 'http://localhost:5000')}/reset-password?token={token}"
-    smtp_host  = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
-    smtp_port  = int(os.environ.get('SMTP_PORT', 587))
-    smtp_user  = os.environ.get('SMTP_USER', '')   # seu e-mail no Railway env
-    smtp_pass  = os.environ.get('SMTP_PASS', '')   # senha de app no Railway env
+    app_url   = os.environ.get('APP_URL', 'http://localhost:5000')
+    reset_url = f"{app_url}/reset-password?token={token}"
 
     html_body = f"""
-    <div style="font-family: 'Segoe UI', sans-serif; max-width: 520px; margin: auto; background: #111115;
-                border: 1px solid #25252f; border-radius: 16px; padding: 36px; color: #ebebf0;">
-      <h2 style="color:#a78bfa; font-size:22px; margin-bottom:8px;">TaskFlow</h2>
-      <p style="font-size:15px; color:#7a7a92; margin-bottom:24px;">Recuperação de senha</p>
-      <p style="font-size:15px;">Olá, <strong>{user.name}</strong>!</p>
-      <p style="font-size:14px; color:#ebebf0; margin:16px 0;">
-        Recebemos uma solicitação para redefinir sua senha. Clique no botão abaixo para criar uma nova senha.
-        Este link expira em <strong>1 hora</strong>.
-      </p>
-      <a href="{reset_url}"
-         style="display:inline-block; background:#7c5cfc; color:#fff; text-decoration:none;
-                padding:12px 28px; border-radius:10px; font-weight:700; font-size:14px; margin:8px 0 24px;">
-        Redefinir senha
-      </a>
-      <p style="font-size:12px; color:#7a7a92;">
-        Se você não solicitou a recuperação de senha, ignore este e-mail.<br/>
-        O link é válido por 1 hora.
-      </p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#0b0b0e;font-family:'Segoe UI',sans-serif;">
+  <div style="max-width:520px;margin:40px auto;background:#111115;border:1px solid #25252f;border-radius:20px;padding:40px;">
+    <div style="margin-bottom:28px;">
+      <span style="font-size:24px;color:#a78bfa;font-weight:800;">&#11041; TaskFlow</span>
     </div>
-    """
+    <h2 style="color:#ebebf0;font-size:22px;font-weight:700;margin:0 0 8px;">Recuperar senha</h2>
+    <p style="color:#7a7a92;font-size:14px;margin:0 0 28px;">
+      Ol&aacute;, <strong style="color:#ebebf0;">{user.name}</strong>!
+      Recebemos uma solicita&ccedil;&atilde;o para redefinir sua senha.
+    </p>
+    <a href="{reset_url}"
+       style="display:block;background:#7c5cfc;color:#fff;text-decoration:none;
+              text-align:center;padding:14px 28px;border-radius:12px;
+              font-weight:700;font-size:15px;margin-bottom:28px;">
+      Redefinir minha senha
+    </a>
+    <p style="color:#7a7a92;font-size:12px;line-height:1.8;margin:0;">
+      Se voc&ecirc; n&atilde;o solicitou, ignore este e-mail.<br/>
+      Este link expira em <strong style="color:#ebebf0;">1 hora</strong>.
+    </p>
+    <hr style="border:none;border-top:1px solid #25252f;margin:24px 0;"/>
+    <p style="color:#3d3d4f;font-size:11px;margin:0;">TaskFlow &mdash; Gerenciador de tarefas</p>
+  </div>
+</body>
+</html>
+"""
 
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = 'TaskFlow — Recuperação de senha'
-        msg['From']    = smtp_user
-        msg['To']      = email
-        msg.attach(MIMEText(html_body, 'html'))
-
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_user, email, msg.as_string())
-
-    except Exception as e:
-        # Log interno, mas não expõe o erro ao usuário
-        print(f'[SMTP ERROR] {e}')
-        # Ainda retorna sucesso para não revelar infra
-        pass
+    _send_resend(to=email, subject='TaskFlow — Recuperação de senha', html=html_body)
 
     return jsonify({'message': 'Se o e-mail estiver cadastrado, você receberá as instruções.'})
+
 
 # ─── Redefinir Senha ───────────────────────
 @users_bp.route('/reset-password', methods=['POST'])
@@ -131,3 +120,41 @@ def reset_password():
     db.session.commit()
 
     return jsonify({'message': 'Senha redefinida com sucesso!'})
+
+
+# ─── Helper Resend ────────────────────────
+def _send_resend(to, subject, html):
+    api_key = os.environ.get('RESEND_API_KEY', '')
+    if not api_key:
+        print('[RESEND] RESEND_API_KEY não configurada — e-mail não enviado')
+        return
+
+    # Use onboarding@resend.dev para testes sem domínio próprio
+    # Quando tiver domínio verificado, troque pelo seu
+    sender = os.environ.get('RESEND_FROM', 'TaskFlow <onboarding@resend.dev>')
+
+    payload = json.dumps({
+        'from':    sender,
+        'to':      [to],
+        'subject': subject,
+        'html':    html
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        'https://api.resend.com/emails',
+        data=payload,
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type':  'application/json'
+        },
+        method='POST'
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            result = json.loads(resp.read())
+            print(f'[RESEND] Enviado com sucesso: {result.get("id")}')
+    except urllib.error.HTTPError as e:
+        print(f'[RESEND] Erro HTTP {e.code}: {e.read().decode()}')
+    except Exception as e:
+        print(f'[RESEND] Erro inesperado: {e}')
